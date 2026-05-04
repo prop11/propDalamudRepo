@@ -1,0 +1,18 @@
+[
+  {
+    "Author": "prop11",
+    "Name": "Aether Currents",
+    "InternalName": "AetherCurrents",
+    "AssemblyVersion": "1.0.0.0",
+    "Description": "Shows aether current locations as markers on the in-game World Map for all expansion zones.",
+    "ApplicableVersion": "any",
+    "RepoUrl": "https://github.com/prop11/AetherCurrents",
+    "Tags": ["aether", "currents", "flying", "map", "tracker"],
+    "DalamudApiLevel": 15,
+    "LoadPriority": 0,
+    "Punchline": "Never hunt aether currents blind again.",
+    "DownloadLinkInstall": "https://github.com/prop11/AetherCurrents/releases/latest/download/AetherCurrents.zip",
+    "DownloadLinkTesting": "https://github.com/prop11/AetherCurrents/releases/latest/download/AetherCurrents.zip",
+    "DownloadLinkUpdate": "https://github.com/prop11/AetherCurrents/releases/latest/download/AetherCurrents.zip"
+  }
+]
