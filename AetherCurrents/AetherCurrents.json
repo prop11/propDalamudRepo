@@ -1,0 +1,13 @@
+{
+  "Author": "prop11",
+  "Name": "Aether Currents",
+  "InternalName": "AetherCurrents",
+  "AssemblyVersion": "1.0.0.0",
+  "Description": "Shows aether current locations as markers on the in-game World Map for all expansion zones (HW, SB, ShB, EW, DT). Open with /aethercurrents or /ac.",
+  "ApplicableVersion": "any",
+  "Tags": ["aether", "currents", "flying", "map", "tracker"],
+  "RepoUrl": "",
+  "DalamudApiLevel": 15,
+  "LoadPriority": 0,
+  "Punchline": "Never hunt aether currents blind again."
+}

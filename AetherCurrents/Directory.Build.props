@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <!-- Suppress assembly version conflict warnings from Dalamud's dependencies -->
+    <NoWarn>$(NoWarn);CS1705</NoWarn>
+    <!-- Don't try to copy Dalamud's DLLs into build output -->
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+</Project>

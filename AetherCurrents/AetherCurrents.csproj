@@ -1,0 +1,15 @@
+<Project Sdk="Dalamud.NET.Sdk/15.0.0">
+
+  <PropertyGroup>
+    <AssemblyName>AetherCurrents</AssemblyName>
+    <RootNamespace>AetherCurrents</RootNamespace>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Author>YourName</Author>
+    <Name>Aether Currents</Name>
+    <Punchline>Shows aether current locations on the world map.</Punchline>
+    <Description>Displays field and quest aether current locations as markers on the in-game World Map for all expansion zones (HW, SB, ShB, EW, DT). Open with /aethercurrents or /ac.</Description>
+    <PackageProjectUrl>https://github.com/YourName/AetherCurrents</PackageProjectUrl>
+  </PropertyGroup>
+
+</Project>
