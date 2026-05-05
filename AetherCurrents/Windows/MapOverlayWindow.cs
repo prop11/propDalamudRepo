@@ -13,35 +13,27 @@ namespace AetherCurrents.Windows;
 
 public sealed unsafe class MapOverlayWindow : Window, IDisposable
 {
-    private readonly Plugin     Plugin;
+    private readonly Plugin Plugin;
     private readonly IPluginLog Log;
 
-    private static readonly Vector4 FieldColour  = new(0.2f,  0.95f, 0.3f, 1.0f);
-    private static readonly Vector4 QuestColour  = new(1.0f,  0.85f, 0.1f, 1.0f);
-    private static readonly Vector4 ShadowColour = new(0.0f,  0.0f,  0.0f, 0.55f);
-
-    private Vector2 _cachedMapCenter;
-    private Vector3 _lastPlayerPos;
-    private float   _lastZoomIndex = -1f;
-    private float   _lastAddonX, _lastAddonY, _lastAddonScale;
-    private bool    _cacheValid;
-
-    private const float MovementThreshold = 0.05f;
+    private static readonly Vector4 FieldColour = new(0.2f, 0.95f, 0.3f, 1.0f);
+    private static readonly Vector4 QuestColour = new(1.0f, 0.85f, 0.1f, 1.0f);
+    private static readonly Vector4 ShadowColour = new(0.0f, 0.0f, 0.0f, 0.55f);
 
     public MapOverlayWindow(Plugin plugin, IPluginLog log)
         : base("##AetherCurrentsMapOverlay",
-               ImGuiWindowFlags.NoTitleBar            |
-               ImGuiWindowFlags.NoResize              |
-               ImGuiWindowFlags.NoInputs              |
-               ImGuiWindowFlags.NoBackground          |
-               ImGuiWindowFlags.NoSavedSettings       |
+               ImGuiWindowFlags.NoTitleBar |
+               ImGuiWindowFlags.NoResize |
+               ImGuiWindowFlags.NoInputs |
+               ImGuiWindowFlags.NoBackground |
+               ImGuiWindowFlags.NoSavedSettings |
                ImGuiWindowFlags.NoBringToFrontOnFocus |
-               ImGuiWindowFlags.NoFocusOnAppearing    |
-               ImGuiWindowFlags.NoScrollbar           |
+               ImGuiWindowFlags.NoFocusOnAppearing |
+               ImGuiWindowFlags.NoScrollbar |
                ImGuiWindowFlags.NoScrollWithMouse)
     {
         Plugin = plugin;
-        Log    = log;
+        Log = log;
         IsOpen = true;
         RespectCloseHotkey = false;
         Position = Vector2.Zero;
@@ -102,56 +94,33 @@ public sealed unsafe class MapOverlayWindow : Window, IDisposable
         var player = Plugin.ObjectTable.LocalPlayer;
         if (player == null) return;
 
-        var playerPos = player.Position;
+        // Recalculate map center EVERY frame - needed for pan tracking
+        var imageNode = (AtkImageNode*)Marshal.ReadIntPtr((nint)areaMap, 0x3B8);
+        if (imageNode == null) return;
 
-        // Only recalculate map center when something meaningfully changes
-        bool needsRecalc = !_cacheValid
-            || zoomIndex      != _lastZoomIndex
-            || areaMap->X     != _lastAddonX
-            || areaMap->Y     != _lastAddonY
-            || areaMap->Scale != _lastAddonScale
-            || Vector3.Distance(playerPos, _lastPlayerPos) > MovementThreshold;
+        var resNode = &imageNode->AtkResNode;
 
-        if (needsRecalc)
-        {
-            var imageNode = (AtkImageNode*)Marshal.ReadIntPtr((nint)areaMap, 0x3B8);
-            if (imageNode != null)
-            {
-                var resNode = &imageNode->AtkResNode;
+        float nodeX, nodeY;
+        resNode->GetPositionFloat(&nodeX, &nodeY);
 
-                float nodeX, nodeY;
-                resNode->GetPositionFloat(&nodeX, &nodeY);
+        float playerMarkerCX = nodeX + (resNode->Width / 2f * resNode->ScaleX);
+        float playerMarkerCY = nodeY + (resNode->Height / 2f * resNode->ScaleY);
 
-                float playerMarkerCX = nodeX + (resNode->Width  / 2f * resNode->ScaleX);
-                float playerMarkerCY = nodeY + (resNode->Height / 2f * resNode->ScaleY);
+        float mapOffsetX = 16f * areaMap->Scale;
+        float mapOffsetY = 52f * areaMap->Scale;
 
-                float mapOffsetX = 16f * areaMap->Scale;
-                float mapOffsetY = 52f * areaMap->Scale;
+        float playerScreenX = areaMap->X - mapOffsetX + (playerMarkerCX * areaMap->Scale);
+        float playerScreenY = areaMap->Y + mapOffsetY + (playerMarkerCY * areaMap->Scale);
 
-                float playerScreenX = areaMap->X - mapOffsetX + (playerMarkerCX * areaMap->Scale);
-                float playerScreenY = areaMap->Y + mapOffsetY + (playerMarkerCY * areaMap->Scale);
-
-                _cachedMapCenter = new Vector2(
-                    playerScreenX - playerPos.X * zoneSizeFactor * multiplier,
-                    playerScreenY - playerPos.Z * zoneSizeFactor * multiplier
-                );
-
-                _lastPlayerPos  = playerPos;
-                _lastZoomIndex  = zoomIndex;
-                _lastAddonX     = areaMap->X;
-                _lastAddonY     = areaMap->Y;
-                _lastAddonScale = areaMap->Scale;
-                _cacheValid     = true;
-            }
-        }
-
-        if (!_cacheValid) return;
+        Vector2 mapCenter = new(
+            playerScreenX - player.Position.X * zoneSizeFactor * multiplier,
+            playerScreenY - player.Position.Z * zoneSizeFactor * multiplier
+        );
 
         // Clip bounds from component node 53
         var mapComponent = areaMap->GetComponentNodeById(53);
         if (mapComponent == null) return;
 
-        // ?? operator can't be used on raw pointers — use explicit null check instead
         AtkResNode* clipNode = mapComponent->Component->UldManager.SearchNodeById(0);
         if (clipNode == null) clipNode = &mapComponent->AtkResNode;
 
@@ -160,31 +129,31 @@ public sealed unsafe class MapOverlayWindow : Window, IDisposable
 
         float mapMinX = areaMap->X + (boxX * areaMap->Scale);
         float mapMinY = areaMap->Y + (boxY * areaMap->Scale);
-        float mapMaxX = mapMinX + (clipNode->Width  * clipNode->ScaleX * areaMap->Scale);
+        float mapMaxX = mapMinX + (clipNode->Width * clipNode->ScaleX * areaMap->Scale);
         float mapMaxY = mapMinY + (clipNode->Height * clipNode->ScaleY * areaMap->Scale);
 
         var drawList = ImGui.GetWindowDrawList();
-        var cfg      = Plugin.Configuration;
+        var cfg = Plugin.Configuration;
 
         drawList.PushClipRect(new Vector2(mapMinX, mapMinY), new Vector2(mapMaxX, mapMaxY), true);
 
         foreach (var current in zone.Currents)
         {
             if (current.Type == CurrentType.Field && !cfg.ShowFieldCurrents) continue;
-            if (current.Type == CurrentType.Quest  && !cfg.ShowQuestCurrents) continue;
+            if (current.Type == CurrentType.Quest && !cfg.ShowQuestCurrents) continue;
 
             float worldX = DisplayCoordToWorld(current.X, zoneSizeFactor * 100f);
             float worldZ = DisplayCoordToWorld(current.Y, zoneSizeFactor * 100f);
 
-            float sx = _cachedMapCenter.X + (worldX * zoneSizeFactor * multiplier);
-            float sy = _cachedMapCenter.Y + (worldZ * zoneSizeFactor * multiplier);
+            float sx = mapCenter.X + (worldX * zoneSizeFactor * multiplier);
+            float sy = mapCenter.Y + (worldZ * zoneSizeFactor * multiplier);
 
             if (sx < mapMinX || sx > mapMaxX || sy < mapMinY || sy > mapMaxY) continue;
 
-            var   centre = new Vector2(sx, sy);
-            float r      = 8f * cfg.MarkerScale * ImGuiHelpers.GlobalScale;
+            var centre = new Vector2(sx, sy);
+            float r = 8f * cfg.MarkerScale * ImGuiHelpers.GlobalScale;
 
-            uint mainCol   = ImGui.ColorConvertFloat4ToU32(
+            uint mainCol = ImGui.ColorConvertFloat4ToU32(
                 current.Type == CurrentType.Field ? FieldColour : QuestColour);
             uint shadowCol = ImGui.ColorConvertFloat4ToU32(ShadowColour);
 
