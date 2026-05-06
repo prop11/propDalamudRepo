@@ -11,8 +11,8 @@
     "DalamudApiLevel": 15,
     "LoadPriority": 0,
     "Punchline": "Never hunt aether currents blind again.",
-    "DownloadLinkInstall": "https://github.com/prop11/AetherCurrents/releases/latest/download/AetherCurrents.zip",
-    "DownloadLinkTesting": "https://github.com/prop11/AetherCurrents/releases/latest/download/AetherCurrents.zip",
-    "DownloadLinkUpdate": "https://github.com/prop11/AetherCurrents/releases/latest/download/AetherCurrents.zip"
+    "DownloadLinkInstall": "https://github.com/prop11/propDalamudRepo/releases/latest/download/latest.zip",
+    "DownloadLinkTesting": "https://github.com/prop11/propDalamudRepo/releases/latest/download/latest.zip",
+    "DownloadLinkUpdate": "https://github.com/prop11/propDalamudRepo/releases/latest/download/latest.zip"
   }
 ]
